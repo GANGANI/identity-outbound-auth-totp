@@ -192,8 +192,7 @@ public class TOTPAuthenticator extends AbstractApplicationAuthenticator
 
                     isInitialFederatedUserLogin = true;
                     authenticatedUser = TOTPUtil.getAuthenticatedUser(context);
-                    context.setProperty(TOTPAuthenticatorConstants.FEDERATED_USERNAME,
-                            MultitenantUtils.getTenantAwareUsername(username));
+                    context.setProperty(TOTPAuthenticatorConstants.FEDERATED_USERNAME, username);
                 }
             }
 

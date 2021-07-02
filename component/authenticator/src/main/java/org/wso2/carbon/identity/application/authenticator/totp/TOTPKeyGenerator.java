@@ -61,16 +61,11 @@ public class TOTPKeyGenerator {
         String encodedQRCodeURL;
         String tenantAwareUsername = null;
         Map<String, String> claims = new HashMap<>();
-        long timeStep;
         try {
             UserRealm userRealm = TOTPUtil.getUserRealm(username);
             String tenantDomain = MultitenantUtils.getTenantDomain(username);
             tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
-            if (context == null) {
-                timeStep = TOTPUtil.getTimeStepSize(tenantDomain);
-            } else {
-                timeStep = TOTPUtil.getTimeStepSize(context);
-            }
+            long timeStep = getTimeStamp(context, tenantDomain);
             if (userRealm != null) {
                 Map<String, String> userClaimValues = userRealm.getUserStoreManager().
                         getUserClaimValues(tenantAwareUsername, new String[]{
@@ -124,45 +119,10 @@ public class TOTPKeyGenerator {
                                                                AuthenticationContext context)
             throws TOTPException {
 
-        long timeStep = getTimeStamp(context, tenantDomain);
-        Map<String, String> claims =
-                getGeneratedClaims(username, tenantDomain, timeStep, context);
-        return claims;
-    }
-
-    private static long getTimeStamp(AuthenticationContext context, String tenantDomain) throws TOTPException {
-
-        long timeStep;
-        try {
-            if (context == null) {
-                timeStep = TOTPUtil.getTimeStepSize(tenantDomain);
-            } else {
-                timeStep = TOTPUtil.getTimeStepSize(context);
-            }
-        } catch (AuthenticationFailedException e) {
-            throw new TOTPException(
-                    "TOTPKeyGenerator cannot get stored time step size", e);
-        }
-        return timeStep;
-    }
-
-    /**
-     * Generate TOTP related claims.
-     *
-     * @param username        Username.
-     * @param tenantDomain    Tenant domain.
-     * @param timeStep        Time stamp.
-     * @param context         Authentication context.
-     * @return TOTP related claims.
-     * @throws TOTPException If an error occurred while generating claims.
-     */
-    private static Map<String, String> getGeneratedClaims(String username, String tenantDomain,
-                                                          long timeStep, AuthenticationContext context)
-            throws TOTPException {
-
         String secretKey;
         String encodedQRCodeURL;
         Map<String, String> claims = new HashMap<>();
+        long timeStep = getTimeStamp(context, tenantDomain);
         String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
         try {
             TOTPAuthenticatorKey key = generateKey(tenantDomain, context);
@@ -184,6 +144,22 @@ public class TOTPKeyGenerator {
                     "TOTPKeyGenerator cannot find the property value for encoding method", e);
         }
         return claims;
+    }
+
+    private static long getTimeStamp(AuthenticationContext context, String tenantDomain) throws TOTPException {
+
+        long timeStep;
+        try {
+            if (context == null) {
+                timeStep = TOTPUtil.getTimeStepSize(tenantDomain);
+            } else {
+                timeStep = TOTPUtil.getTimeStepSize(context);
+            }
+        } catch (AuthenticationFailedException e) {
+            throw new TOTPException(
+                    "TOTPKeyGenerator cannot get stored time step size", e);
+        }
+        return timeStep;
     }
 
     /**
