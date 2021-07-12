@@ -898,13 +898,14 @@ public class TOTPAuthenticator extends AbstractApplicationAuthenticator
         try {
             IdentityProvider idp = TOTPDataHolder.getInstance().getIdpManager().getIdPByName(idpName, tenantDomain);
             if (idp == null) {
-                throw new AuthenticationFailedException(
-                        String.format(
+                throw new AuthenticationFailedException(String.format(
                         ErrorMessages.ERROR_CODE_INVALID_FEDERATED_AUTHENTICATOR.getMessage(), idpName, tenantDomain));
             }
             return idp;
         } catch (IdentityProviderManagementException e) {
-            throw new AuthenticationFailedException("");
+            throw new AuthenticationFailedException(String.format(
+                    ErrorMessages.ERROR_CODE_ERROR_GETTING_FEDERATED_AUTHENTICATOR.getMessage(),
+                    idpName, tenantDomain), e);
         }
     }
 
